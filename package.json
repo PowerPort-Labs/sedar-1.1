@@ -1,0 +1,16 @@
+{
+  "name": "Sedar-2",
+  "version": "1.0.0",
+  "description": "Sedar 2 - Stops abuse on hostings",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "path": "^0.12.7",
+    "axios": "^1.6.0"
+  },
+  "author": "HydrenLLC",
+  "license": "MIT"
+}
