@@ -167,28 +167,36 @@ app.get('/scan', async (req, res) => {
 });
 
 // Endpoint to get the logs
+// Backend route for /logs
 app.get('/logs', (req, res) => {
-    res.status(200).json({ logs });
+    res.status(200).json({ logs: logs });
 });
 
 // Serve index.html for frontend
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Real-time Logs</title>
-            <script src="https://cdn.jsdelivr.net/npm/xterm@4.12.0/lib/xterm.js"></script>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.12.0/css/xterm.css" />
-        </head>
-        <body>
-            <button id="startScan">Start Scan</button>
-            <div id="terminal" class="bg-black/20 p-4 rounded-xl border border-white/5 shadow-sm scrollbar-hide overflow-x-auto mb-4"></div>
+<html lang="en">
 
-            <script>
-                const baseTheme = {
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Logs</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- xterm.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xterm@4.12.0/lib/xterm.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.12.0/css/xterm.css" />
+</head>
+
+<body class="bg-gray-100 text-[#363534]">
+
+    <button id="startScan" class="bg-blue-500 text-white p-2 rounded-lg m-4">Start Scan</button>
+
+    <div id="terminal" class="bg-black/20 p-4 rounded-xl border border-white/5 shadow-sm scrollbar-hide overflow-x-auto mb-4"></div>
+
+    <script>
+        const baseTheme = {
             foreground: '#c5c9d1',
             background: 'rgba(0 0 0 / 0)',
             selection: '#5DA5D533',
@@ -211,45 +219,50 @@ app.get('/', (req, res) => {
             brightWhite: '#ffffff',
         };
 
-                const terminal = new Terminal({
-                    disableStdin: true,
-                    allowProposedApi: true,
-                    cursorStyle: 'underline',
-                    rows: 20,
-                    cols: 100,
-                    fontFamily: 'Menlo, monospace',
-                    theme: baseTheme,
-                    allowTransparency: true,
-                    fontSize: 12,
-                    lineHeight: 1.0, // Standard line height
-                });
+        const terminal = new Terminal({
+            disableStdin: true,
+            allowProposedApi: true,
+            cursorStyle: 'underline',
+            rows: 20,
+            cols: 100,
+            fontFamily: 'Menlo, monospace',
+            theme: baseTheme,
+            allowTransparency: true,
+            fontSize: 12,
+            lineHeight: 1.0, // Standard line height
+        });
 
-                terminal.open(document.getElementById('terminal'));
+        terminal.open(document.getElementById('terminal'));
 
-                document.getElementById('startScan').addEventListener('click', async () => {
-                    await fetch('/scan'); // Trigger the scan when the button is clicked
-                    fetchLogs(); // Fetch and display logs after the scan starts
-                });
+        // Button click event to start the scan
+        document.getElementById('startScan').addEventListener('click', async () => {
+            await fetch('/scan'); // Trigger the scan when the button is clicked
+            fetchLogs(); // Fetch and display logs after the scan starts
+        });
 
-                // Function to fetch logs from the backend and update the terminal
-                async function fetchLogs() {
-                    const response = await fetch('/logs');
-                    const data = await response.json();
-                    data.logs.forEach(log => {
-                        terminal.writeln(`[${log.timestamp}] ${log.message}`); // Display logs in xterm.js
-                    });
-                }
+        // Function to fetch logs from the backend and update the terminal
+async function fetchLogs() {
+    try {
+        const response = await fetch('/logs'); // Fetch logs from the backend
+        const data = await response.json(); // Parse the JSON response
 
-                // Optional: WebSocket for real-time log updates
-                const socket = new WebSocket('ws://localhost:3000');
-                socket.onmessage = function(event) {
-                    const log = JSON.parse(event.data); // Parse the JSON message
-                    terminal.writeln(`[${log.timestamp}] ${log.message}`); // Display it in xterm.js
-                };
-                  setInterval(fetchLogs, 1);  // 1ms interval
-            </script>
-        </body>
-        </html>
+        // Check if logs exist in the response and if they do, display them
+        if (data.logs && data.logs.length > 0) {
+            data.logs.forEach(log => {
+                terminal.writeln(`[${log.timestamp}] ${log.message}`); // Display logs in xterm.js
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching logs:', error); // Log any errors
+    }
+}
+        // Set interval to fetch logs every 1ms (as per your request)
+        setInterval(fetchLogs, 1);
+
+    </script>
+</body>
+
+</html>
     `);
 });
 
