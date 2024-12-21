@@ -1,0 +1,11 @@
+{
+  "hydra": {
+    "url": "http://example.com",
+    "key": "YOUR_HYDRA_KEY"
+  },
+  "node": {
+    "url": "http://example.com",
+    "key": "YOUR_NODE_KEY"
+  },
+  "port": 3000
+}
